@@ -74,10 +74,10 @@ class Home extends Component {
   };
 
   selectTile = (val) => {
-    let { selectedTiles, guessMode } = this.state;
+    let { selectedTiles, guessMode, isComplete } = this.state;
 
     // only handle click if in guessMode
-    if (guessMode) {
+    if (guessMode && !isComplete) {
       selectedTiles.push(val);
       this.setState({ selectedTiles });
       this.checkIfComplete(selectedTiles);
@@ -151,10 +151,12 @@ class Home extends Component {
           <span
             style={{ display: guessMode && !isComplete ? "inline" : "none" }}
           >
-            {correct} right out of {difficulty} total with {incorrect} mistakes.
+            {correct} right out of {difficulty} total with {incorrect} mistake
+            {incorrect !== 1 ? "s" : ""}.
           </span>
           <span style={{ display: isComplete ? "block" : "none" }}>
-            You got all of the boxes with {incorrect} mistakes!
+            You got all of the boxes with {incorrect} mistake
+            {incorrect !== 1 ? "s" : ""}!
           </span>
           <span style={{ display: memorizeMode ? "block" : "none" }}>
             Memorize the highlighted cells!
@@ -192,6 +194,8 @@ class Home extends Component {
                         ? correctTiles.includes(i * difficulty + j)
                           ? "green"
                           : "red"
+                        : isComplete
+                        ? "gray"
                         : "white"
                       : "gray"
                   }}
