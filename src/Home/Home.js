@@ -32,7 +32,7 @@ class Home extends Component {
     for (let i = 0; i < difficulty; i++) {
       let index = Math.floor(Math.random() * tileNums.length);
       correctTiles.push(tileNums[index]);
-      tileNums.splice(index, 1); // remove to avoid possible duplication
+      tileNums.splice(index, 1); // this is to avoid duplication
     }
 
     this.setState({ correctTiles });
@@ -41,7 +41,11 @@ class Home extends Component {
   setMemorizeMode = () => {
     this.setState({ memorizeMode: true, selectedTiles: [], isComplete: false });
     setTimeout(() => {
-      this.setState({ memorizeMode: false, guessMode: true });
+      // continue to guessMode only if the difficulty has not been updated
+      let { memorizeMode } = this.state;
+      if (memorizeMode) {
+        this.setState({ memorizeMode: false, guessMode: true });
+      }
     }, 1500);
   };
 
@@ -70,24 +74,32 @@ class Home extends Component {
   };
 
   selectTile = (val) => {
-    let { selectedTiles } = this.state;
-    selectedTiles.push(val);
-    this.setState({ selectedTiles });
-    this.checkIfComplete(selectedTiles);
+    let { selectedTiles, guessMode } = this.state;
+
+    // only handle click if in guessMode
+    if (guessMode) {
+      selectedTiles.push(val);
+      this.setState({ selectedTiles });
+      this.checkIfComplete(selectedTiles);
+    }
   };
 
   checkIfComplete = (selectedTiles) => {
     let { correctTiles } = this.state;
     let correctSelected = [];
+
+    // find correct selected
     correctTiles.forEach((correct) => {
       if (selectedTiles.includes(correct)) {
         correctSelected.push(correct);
       }
     });
 
-    // complete game if all corrects are selected
+    // update correct and incorrect counts
     let correct = correctSelected.length;
     let incorrect = selectedTiles.length - correctSelected.length;
+
+    // complete game if all corrects are selected
     let isComplete = false;
     if (correctTiles.length === correctSelected.length) {
       isComplete = true;
