@@ -8,13 +8,17 @@ class Home extends Component {
       memorizeMode: false,
       guessMode: false,
       selectedTiles: [],
-      correctTiles: []
+      correctTiles: [],
+      isComplete: false,
+      correct: 0,
+      incorrect: 0
     };
   }
 
   play = () => {
+    this.resetGame();
     this.setCorrectTiles();
-    this.setMemorizationMode();
+    this.setMemorizeMode();
   };
 
   setCorrectTiles = () => {
@@ -27,31 +31,41 @@ class Home extends Component {
     let correctTiles = [];
     for (let i = 0; i < difficulty; i++) {
       let index = Math.floor(Math.random() * tileNums.length);
-      correctTiles.push(tileNums[index]); // add as element id
-      tileNums.splice(index, 1); // remove from tileNums to avoid duplication
+      correctTiles.push(tileNums[index]);
+      tileNums.splice(index, 1); // remove to avoid possible duplication
     }
 
     this.setState({ correctTiles });
   };
 
-  setMemorizationMode = () => {
-    this.setState({ memorizeMode: true });
+  setMemorizeMode = () => {
+    this.setState({ memorizeMode: true, selectedTiles: [], isComplete: false });
     setTimeout(() => {
       this.setState({ memorizeMode: false, guessMode: true });
     }, 1500);
   };
 
   updateDifficulty = (val) => {
+    this.setState({ difficulty: val });
+    this.resetGame();
+  };
+
+  resetGame = () => {
     let memorizeMode = false;
     let guessMode = false;
     let selectedTiles = [];
     let correctTiles = [];
+    let isComplete = false;
+    let correct = 0;
+    let incorrect = 0;
     this.setState({
-      difficulty: val,
       memorizeMode,
       guessMode,
       selectedTiles,
-      correctTiles
+      correctTiles,
+      isComplete,
+      correct,
+      incorrect
     });
   };
 
@@ -59,6 +73,27 @@ class Home extends Component {
     let { selectedTiles } = this.state;
     selectedTiles.push(val);
     this.setState({ selectedTiles });
+    this.checkIfComplete(selectedTiles);
+  };
+
+  checkIfComplete = (selectedTiles) => {
+    let { correctTiles } = this.state;
+    let correctSelected = [];
+    correctTiles.forEach((correct) => {
+      if (selectedTiles.includes(correct)) {
+        correctSelected.push(correct);
+      }
+    });
+
+    // complete game if all corrects are selected
+    let correct = correctSelected.length;
+    let incorrect = selectedTiles.length - correctSelected.length;
+    let isComplete = false;
+    if (correctTiles.length === correctSelected.length) {
+      isComplete = true;
+    }
+
+    this.setState({ correct, incorrect, isComplete });
   };
 
   render() {
@@ -66,21 +101,18 @@ class Home extends Component {
       difficulty,
       memorizeMode,
       guessMode,
+      selectedTiles,
       correctTiles,
-      selectedTiles
+      isComplete,
+      correct,
+      incorrect
     } = this.state;
 
     let rows = [];
     let tiles = [];
     for (let i = 0; i < difficulty; i++) {
       rows.push([]);
-      tiles.push(
-        <div
-          key={i}
-          // className="tile"
-          style={{ height: "100%", width: "100%" }}
-        ></div>
-      );
+      tiles.push(<div key={i} style={{ height: "100%", width: "100%" }}></div>);
     }
 
     return (
@@ -98,15 +130,33 @@ class Home extends Component {
           </p>
         </div>
         <h1>Memory Game</h1>
+        <div className="subHeader">
+          <span
+            style={{ display: guessMode && !isComplete ? "inline" : "none" }}
+          >
+            Click the cells that were highlighted!
+          </span>
+          <span
+            style={{ display: guessMode && !isComplete ? "inline" : "none" }}
+          >
+            {correct} right out of {difficulty} total with {incorrect} mistakes.
+          </span>
+          <span style={{ display: isComplete ? "block" : "none" }}>
+            You got all of the boxes with {incorrect} mistakes!
+          </span>
+          <span style={{ display: memorizeMode ? "block" : "none" }}>
+            Memorize the highlighted cells!
+          </span>
+        </div>
         <button
           onClick={this.play}
-          style={{ display: memorizeMode ? "none" : "block" }}
+          style={{
+            display:
+              (!memorizeMode && !guessMode) || isComplete ? "block" : "none"
+          }}
         >
-          Play
+          {isComplete ? "Play again?" : "Play"}
         </button>
-        <p style={{ display: memorizeMode ? "block" : "none" }}>
-          Memorize the highlighted cells!
-        </p>
         <div className="board">
           {rows.map((row, i) => (
             <div

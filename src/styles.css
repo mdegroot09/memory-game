@@ -9,6 +9,11 @@
   align-items: center;
 }
 
+.subHeader {
+  display: flex;
+  flex-direction: column;
+}
+
 .board {
   width: 500px;
   height: 500px;
