@@ -4,20 +4,30 @@ class Home extends Component {
   constructor() {
     super();
     this.state = {
-      difficulty: 2
+      difficulty: 2,
+      memorizeMode: false,
+      guessMode: false,
+      correctTiles: {}
     };
   }
 
   play = () => {
-    this.showTiles();
+    this.setMemorizationMode();
   };
 
-  showTiles = () => {
-    let { difficulty } = this.state;
+  setMemorizationMode = () => {
+    this.setState({ memorizeMode: true });
+    setTimeout(() => {
+      this.setState({ memorizeMode: false, guessMode: true });
+    }, 1500);
+  };
+
+  updateDifficulty = (val) => {
+    this.setState({ difficulty: val });
   };
 
   render() {
-    let { difficulty } = this.state;
+    let { difficulty, memorizeMode } = this.state;
 
     let rows = [];
     let tiles = [];
@@ -25,8 +35,9 @@ class Home extends Component {
       rows.push([]);
       tiles.push(
         <div
-          className="tile"
-          style={{ width: `calc(100% / ${difficulty} - 5px)` }}
+          key={i}
+          // className="tile"
+          style={{ height: "100%", width: "100%" }}
         ></div>
       );
     }
@@ -34,21 +45,41 @@ class Home extends Component {
     return (
       <div className="home">
         <div>
-          <input type="range" min="2" max="20" />
+          <input
+            onChange={(e) => this.updateDifficulty(e.target.value)}
+            type="range"
+            min="2"
+            max="20"
+          />
           <p style={{ display: "inline", marginLeft: "10px" }}>
             Difficulty: {difficulty}
           </p>
         </div>
         <h1>Memory Game</h1>
-        <button onClick={this.play}>Play</button>
+        <button
+          onClick={this.play}
+          style={{ display: memorizeMode ? "none" : "block" }}
+        >
+          Play
+        </button>
+        <p style={{ display: memorizeMode ? "block" : "none" }}>
+          Memorize the highlighted cells!
+        </p>
         <div className="board">
           {rows.map((row, i) => (
             <div
+              key={i}
               className="row"
               style={{ height: `calc(100% / ${difficulty})` }}
             >
               {tiles.map((tile, j) => (
-                <>{tile}</>
+                <div
+                  key={j}
+                  className="tile"
+                  style={{ width: `calc(100% / ${difficulty} - 5px)` }}
+                >
+                  {tile}
+                </div>
               ))}
             </div>
           ))}
