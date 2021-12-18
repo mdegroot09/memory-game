@@ -4,15 +4,34 @@ class Home extends Component {
   constructor() {
     super();
     this.state = {
-      difficulty: 2,
+      difficulty: 5,
       memorizeMode: false,
       guessMode: false,
-      correctTiles: {}
+      selectedTiles: [],
+      correctTiles: []
     };
   }
 
   play = () => {
+    this.setCorrectTiles();
     this.setMemorizationMode();
+  };
+
+  setCorrectTiles = () => {
+    let { difficulty } = this.state;
+    let tileNums = [];
+    for (let i = 0; i < difficulty ** 2; i++) {
+      tileNums.push(i);
+    }
+
+    let correctTiles = [];
+    for (let i = 0; i < difficulty; i++) {
+      let index = Math.floor(Math.random() * tileNums.length);
+      correctTiles.push(tileNums[index]); // add as element id
+      tileNums.splice(index, 1); // remove from tileNums to avoid duplication
+    }
+
+    this.setState({ correctTiles });
   };
 
   setMemorizationMode = () => {
@@ -23,11 +42,33 @@ class Home extends Component {
   };
 
   updateDifficulty = (val) => {
-    this.setState({ difficulty: val });
+    let memorizeMode = false;
+    let guessMode = false;
+    let selectedTiles = [];
+    let correctTiles = [];
+    this.setState({
+      difficulty: val,
+      memorizeMode,
+      guessMode,
+      selectedTiles,
+      correctTiles
+    });
+  };
+
+  selectTile = (val) => {
+    let { selectedTiles } = this.state;
+    selectedTiles.push(val);
+    this.setState({ selectedTiles });
   };
 
   render() {
-    let { difficulty, memorizeMode } = this.state;
+    let {
+      difficulty,
+      memorizeMode,
+      guessMode,
+      correctTiles,
+      selectedTiles
+    } = this.state;
 
     let rows = [];
     let tiles = [];
@@ -50,6 +91,7 @@ class Home extends Component {
             type="range"
             min="2"
             max="20"
+            value={difficulty}
           />
           <p style={{ display: "inline", marginLeft: "10px" }}>
             Difficulty: {difficulty}
@@ -76,7 +118,24 @@ class Home extends Component {
                 <div
                   key={j}
                   className="tile"
-                  style={{ width: `calc(100% / ${difficulty} - 5px)` }}
+                  id={i * difficulty + j}
+                  style={{
+                    width: `calc(100% / ${difficulty} - 5px)`,
+                    backgroundColor: memorizeMode
+                      ? correctTiles.includes(i * difficulty + j)
+                        ? "blue"
+                        : "gray"
+                      : guessMode
+                      ? selectedTiles.includes(i * difficulty + j)
+                        ? correctTiles.includes(i * difficulty + j)
+                          ? "green"
+                          : "red"
+                        : "white"
+                      : "gray"
+                  }}
+                  onClick={() => {
+                    this.selectTile(i * difficulty + j);
+                  }}
                 >
                   {tile}
                 </div>
